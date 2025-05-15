@@ -1,0 +1,173 @@
+{
+  "name": "send summary",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "365d3c5a-05ef-4bb6-87f4-a118df8295c4",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## ✅ SYSTEM INSTRUCTION: Generate and Send Daily Email Summary Report\n\n---\n\n### 🎯 OBJECTIVE\n\nAutomatically fetch **today’s email records** from Supabase, **identify all existing mail categories dynamically** (based on actual values in the `Type` column), group and sort them by priority, **generate a professionally formatted summary email**, send it via Gmail, and **only after successful delivery**, clear Supabase for the next day.\n\n---\n\n### 📥 INPUT FORMAT (Supabase Columns)\n\nEach record contains:\n\n* `From` – Sender name or email\n* `Subject` – Subject line of the email\n* `Type` – Email category (e.g., Important, Promotion, Social, etc.)\n* `Priority` – Priority level (Urgent | High | Medium | Low)\n\n---\n\n### 🔄 STEP-BY-STEP PROCESS\n\n#### 1. ✅ Fetch and Validate Email Records\n\n* Read all rows from Supabase (except header row).\n* Ensure each row includes values for all 4 fields: `From`, `Subject`, `Type`, `Priority`.\n* Skip incomplete rows and log them separately.\n\n---\n\n#### 2. 🔎 Dynamically Detect Email Categories\n\n* Identify all unique values in the `Type` column.\n* Create separate groups for each email type (e.g., if `Type` includes \"Important\", \"Promotion\", and \"Team Update\", create 3 groups accordingly).\n* **Do not assume fixed categories like Important, Promotion, Social. Detect them from the actual data.**\n\n---\n\n#### 3. 📊 Sort Each Category by Priority\n\nSort each category's emails in this order:\n\n1. Urgent\n2. High\n3. Medium\n4. Low\n\n---\n\n#### 4. 📝 Generate Professional Summary Report\n\nPrepare a professional summary in this format:\n\n```\nToday's mails received: X total\n<Detected Type 1>: Y emails  \n<Detected Type 2>: Z emails  \n...\n\nSummary of today's <Detected Type 1>:\n- From: [Sender] | Subject: [Subject] | Priority: [Priority]\n...\n\nSummary of today's <Detected Type 2>:\n- No emails received in this category. (if empty)\n```\n\n**Ensure:**\n\n* All category counts are accurate.\n* If a category has no emails, clearly state it with a placeholder message.\n* Format all data cleanly for easy reading.\n\n---\n\n#### 5. ✉️ Send Summary Report via Gmail Tool\n\n* **Call the Gmail tool only after fetching all records from Supabase and generating the complete summary.**\n* Use a **professional HTML + inline CSS email template**.\n* Email subject:\n  `Daily Email Summary Report - [Current Date]`\n* Include:\n\n  * Total mail count\n  * Category-wise breakdown\n  * Sorted summaries\n  * Clear and structured formatting\n\n✅ **Do not skip this step. Sending the email is mandatory before any data deletion.**\n\n---\n\n#### 6. 🧹 Clear Supabase ONLY After Email is Sent\n\n* After receiving a success confirmation from the Gmail tool:\n\n  * Delete all rows except for the header.\n  * Log a “Supabase cleared successfully” message.\n\n❌ If the email fails to send:\n\n* **Do not delete or alter Supabase records.**\n* Log the failure and retry later or notify the admin.\n\n---\n\n### 📌 CRITICAL RULES\n\n* ✔️ Fetch → Summarize → Email → Clear (in this exact order)\n* ✔️ Dynamically detect categories from Supabase data (`Type` field).\n* ✔️ Use clean HTML+CSS in the email body for professional formatting.\n* ❌ Do not assume fixed mail types like Important/Promotion/Social—detect what’s actually received.\n* ❌ Do not clear Supabase if email delivery fails.\n\n---\n\nthis is required and most important step to send gmail:\nfirst fetch the records from supabase and then send mail\nmake sure call gmail node after all records fetched from supabase and in proffesional format of html and inline css to mail it and then send mail \n\n\nsteps required to follow \n\nfirst fetch the records from  supabase tool then write summary mail from chat model and then send this summary to gmail tool is required and important and required to show all types of mail count in professional html css mail template \nafter all process completed to continue the flow and clear supabase\n\nfirst read all records from supabase after reading all records then call gmail tool\n\nafter dividing all records to their mail types then send mail\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        220,
+        0
+      ],
+      "id": "c45f78b4-bc44-4020-8560-c66ca6676653",
+      "name": "AI Agent",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": "deepseek-r1-distill-llama-70b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        160,
+        200
+      ],
+      "id": "3ed06e8a-2e0f-4b5a-a720-60fe38225925",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "AgUuaOXY45U8e3m8",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "devilsomeone269@gmail.com",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        300,
+        220
+      ],
+      "id": "a7128a07-2bd1-4da5-a72f-4a78eebc682b",
+      "name": "Gmail",
+      "webhookId": "ddcbc103-9b0a-46f9-a741-f7e0eeae4071",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dW6UJCVC82rG83aV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -120,
+        220
+      ],
+      "id": "56ae9f20-2c3a-4912-b01f-862c4a4dc594",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "todays_emails",
+        "returnAll": true,
+        "filterType": "none"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        460,
+        220
+      ],
+      "id": "a4e03e69-1b9e-4c00-bbeb-87eb13428e7c",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "fVfEdXdUqLwKg54A",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f6ce3377-291e-4e0b-bc7f-160d89b7a2eb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "814d941508ec29904df3c4ca3005f130dc5321db27e66a390c692a9fa4b05b76"
+  },
+  "id": "NrJ0rMy6tAj6jw3D",
+  "tags": []
+}

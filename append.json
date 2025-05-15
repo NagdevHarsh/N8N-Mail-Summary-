@@ -1,0 +1,154 @@
+{
+  "name": "append",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "abddc04d-6c42-49d7-88c0-d0b895329b1f",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dW6UJCVC82rG83aV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-r1-distill-llama-70b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        220,
+        240
+      ],
+      "id": "22c058a8-8fe5-402c-838b-eb8b4feb9f9e",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "AgUuaOXY45U8e3m8",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\n**🟦 SYSTEM INSTRUCTION: Email Summarization and Record Insertion to Supabase**\n\nyour task is process all {{ $now }} emails and extract key metadata. Then, generate a concise, structured summary and append the extracted data into a connected Supabase. Follow the strict formatting and logic below:\n\n---\n\n**🔹 OBJECTIVE**\nExtract and process the following fields from each email:\n\n* `from`: Sender of the email\n* `subject`: Subject line of the email\n* `type`: The second label in the email label array (e.g., Promotions, Updates, Social)\n* `summary`: A concise, **original summary** of the email content (max **15 words**)\n\n---\n\n**🔹 OUTPUT FORMAT**\nStrictly format the output as the following JSON object:\n\n```json\n{\n  \"from\": \"{{ $json.From }}\",\n  \"subject\": \"{{ $json.Subject }}\",\n  \"type\": \"you have to decide the mail type(like what type of mail had came eg. promotions , social ,update)\",\n  \"summary\": \"{{ $json.snippet }}\"\n}\n```\n\n**Important Notes for Summary Generation:**\n\n* The summary must be rewritten in your own words.\n* Limit the summary to **15 words maximum**.\n* It must reflect the **core action or intent** of the email content.\n\n---\n\n**🔹 Supabase INSERTION INSTRUCTION**\nAdd all mail data of **{{ $now }}** in the Supabase.\n\n// 📤 Return ready-to-insert JSON records for Supabase node\nreturn results;\n```\n\nAfter generating the JSON, automatically insert the values of the following fields into the provided  Supabase or Excel-compatible Supabase:\n\n| {{ $json.From }} | {{ $json.Subject }} | type of mail recived | {{ $json.snippet }} |\n\n---\n\n**✅ FINAL REQUIREMENT**\n\n* No extra explanations, text, or formatting.\n* **Only output the JSON object.**\n* **Ensure this JSON is ready for direct insertion into the Supabase.**\n\nafter getting mail and then format it add record into  Supabase integration in tool is required.\n",
+        "options": {
+          "maxIterations": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        220,
+        0
+      ],
+      "id": "131f16aa-4a74-4538-a209-07bac7f1b008",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "tableId": "todays_emails",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "from",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues0_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues1_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "type",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues2_Field_Value', ``, 'string') }}"
+            },
+            {
+              "fieldId": "summary",
+              "fieldValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fieldValues3_Field_Value', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        440,
+        260
+      ],
+      "id": "a787201c-cd25-4dde-bea7-071e5cf4420a",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "fVfEdXdUqLwKg54A",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "34f05368-6279-4e81-a296-dd9609f0e53f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "814d941508ec29904df3c4ca3005f130dc5321db27e66a390c692a9fa4b05b76"
+  },
+  "id": "hzjl7ieueQgeXCSo",
+  "tags": []
+}
