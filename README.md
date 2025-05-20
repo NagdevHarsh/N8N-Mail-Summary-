@@ -30,7 +30,6 @@ The goal is to enable users to scan through summaries and decide which emails ar
 - **Supabase** – PostgreSQL-based backend (database + API)
 - **OpenAI API** – For summarization and categorization
 - **Gmail API** – For fetching emails
-- 
 ---
 
 ## 📊 Workflow Architecture
@@ -51,5 +50,4 @@ The goal is to enable users to scan through summaries and decide which emails ar
   - Predicted category
 - Updates the record with summary and category
 
----
 
